@@ -8,7 +8,7 @@ import { ConfigurationManager } from '../local-first/sync-engine/config';
 import type { AutoSyncStatus } from '../local-first/sync-engine/types';
 import { Effect } from 'effect';
 
-function BlankApp() {
+function LocalfirstTest() {
   const [message, setMessage] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
@@ -559,4 +559,4 @@ function BlankApp() {
   );
 }
 
-export default BlankApp;
+export default LocalfirstTest;

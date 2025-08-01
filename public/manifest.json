@@ -13,11 +13,6 @@
   "action": {
     "default_title": "Open MateMe Chat Sidebar"
   },
-  "icons": {
-    "16": "favicon.ico",
-    "48": "logo192.png",
-    "128": "logo512.png"
-  },
   "background": {
     "service_worker": "background.js"
   }
