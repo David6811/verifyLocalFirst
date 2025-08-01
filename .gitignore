@@ -78,3 +78,4 @@ jspm_packages/
 *.swp
 *.swo
 *~
+dist/

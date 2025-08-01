@@ -4,7 +4,7 @@ module.exports = {
   mode: 'production',
   entry: './src/sidebar.tsx',
   output: {
-    path: path.resolve(__dirname, 'build'),
+    path: path.resolve(__dirname, 'dist'),
     filename: 'sidebar.js',
   },
   resolve: {
@@ -14,7 +14,29 @@ module.exports = {
     rules: [
       {
         test: /\.tsx?$/,
-        use: 'ts-loader',
+        use: {
+          loader: 'ts-loader',
+          options: {
+            transpileOnly: true,
+            configFile: false,
+            compilerOptions: {
+              target: 'es5',
+              lib: ['dom', 'dom.iterable', 'es6'],
+              allowJs: true,
+              skipLibCheck: true,
+              esModuleInterop: true,
+              allowSyntheticDefaultImports: true,
+              strict: false,
+              forceConsistentCasingInFileNames: true,
+              module: 'esnext',
+              moduleResolution: 'node',
+              resolveJsonModule: true,
+              isolatedModules: true,
+              noEmit: false,
+              jsx: 'react-jsx',
+            },
+          },
+        },
         exclude: /node_modules/,
       },
       {
@@ -23,8 +45,5 @@ module.exports = {
       },
     ],
   },
-  externals: {
-    react: 'React',
-    'react-dom': 'ReactDOM',
-  },
+  // Remove externals to bundle React with the app
 };
