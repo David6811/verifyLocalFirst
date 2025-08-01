@@ -7,6 +7,7 @@
  */
 
 import { TableConfig } from '../../local-first/schema/dynamic-entity';
+import type { SchemaAwareSupabaseConfig } from '../../local-first-impl/repositories/schema-aware-supabase-repository';
 
 export const TABLE_CONFIG: TableConfig = {
   tableName: 'bookmarks',
@@ -25,7 +26,6 @@ export const TABLE_CONFIG: TableConfig = {
 };
 
 // Default configuration for Schema-Aware Supabase Repository
-import type { SchemaAwareSupabaseConfig } from '../../local-first-impl/repositories/schema-aware-supabase-repository';
 
 export const DEFAULT_SUPABASE_CONFIG: Required<SchemaAwareSupabaseConfig> = {
   defaultTableName: 'bookmarks',
