@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { signIn, signOut, getCurrentUser } from '../externals/auth-operations';
-import { Effect } from 'effect';
+import { login, logout, getCurrentUser, quickLogin, User } from '../externals';
 
 interface AuthSectionProps {
   onUserChange: (user: any) => void;
@@ -8,7 +7,7 @@ interface AuthSectionProps {
 }
 
 export default function AuthSection({ onUserChange, onMessage }: AuthSectionProps) {
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Load current user on mount
@@ -18,7 +17,7 @@ export default function AuthSection({ onUserChange, onMessage }: AuthSectionProp
 
   const loadCurrentUser = async () => {
     try {
-      const user = await Effect.runPromise(getCurrentUser());
+      const user = await getCurrentUser();
       setCurrentUser(user);
       onUserChange(user);
     } catch (error) {
@@ -32,20 +31,12 @@ export default function AuthSection({ onUserChange, onMessage }: AuthSectionProp
     onMessage('');
     
     try {
-      const result = await Effect.runPromise(signIn({
-        email: 'weixu.craftsman@gmail.com',
-        password: '123456'
-      }));
-      
-      if (result.success && result.user) {
-        setCurrentUser(result.user);
-        onUserChange(result.user);
-        onMessage(`✅ Login successful! Welcome ${result.user.email}`);
-      } else {
-        throw new Error(result.error || 'Login failed');
-      }
+      const user = await quickLogin();
+      setCurrentUser(user);
+      onUserChange(user);
+      onMessage(`✅ Login successful! Welcome ${user.email}`);
     } catch (error) {
-      onMessage(`❌ Login failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      onMessage(`❌ Login failed: ${(error as Error).message}`);
     } finally {
       setIsLoading(false);
     }
@@ -56,17 +47,12 @@ export default function AuthSection({ onUserChange, onMessage }: AuthSectionProp
     onMessage('');
     
     try {
-      const result = await Effect.runPromise(signOut());
-      
-      if (result.success) {
-        setCurrentUser(null);
-        onUserChange(null);
-        onMessage('✅ Logout successful!');
-      } else {
-        throw new Error(result.error || 'Logout failed');
-      }
+      await logout();
+      setCurrentUser(null);
+      onUserChange(null);
+      onMessage('✅ Logout successful!');
     } catch (error) {
-      onMessage(`❌ Logout failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      onMessage(`❌ Logout failed: ${(error as Error).message}`);
     } finally {
       setIsLoading(false);
     }

@@ -1,11 +1,13 @@
-// 业务操作层 Business Operations Layer
-export * from './bookmark-operations';
-export * from './auth-operations';
-export * from './sync-operations';
+/**
+ * Simple Externals API
+ * Everything you need for the app - no confusion
+ */
 
-// 类型定义 Type Definitions
-export * from './types';
+// Auth functions - just login/logout
+export * from './auth';
 
-// 底层实现重导出 (逐步移除) Low-level Implementation Re-exports (to be gradually removed)
-export * from '../local-first-impl/supabase';
-export * from '../local-first-impl/auth';
+// Bookmark functions - just CRUD
+export * from './bookmarks';
+
+// Sync functions - just sync
+export * from './sync';
