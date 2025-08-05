@@ -33,7 +33,6 @@ export async function createBookmark(data: CreateBookmarkData): Promise<Bookmark
     title: data.title,
     link: data.link || '',
     summary: data.summary || '',
-    user_id: data.user_id,
     status: data.status || 1,
     type: data.type || 1,
     level: data.level || 0,
@@ -42,16 +41,21 @@ export async function createBookmark(data: CreateBookmarkData): Promise<Bookmark
     updated_at: new Date().toISOString(),
   };
   
-  const entity = await LocalFirstOps.createEntity('bookmarks', bookmarkData);
+  // Use the expected format for LocalFirstOps
+  const entity = await LocalFirstOps.createEntity('bookmarks', {
+    data: bookmarkData,
+    user_id: data.user_id,
+  });
+  
   return {
     id: entity.id,
-    title: entity.title,
-    link: entity.link,
-    summary: entity.summary,
-    user_id: entity.user_id,
-    created_at: entity.created_at,
-    status: entity.status,
-    type: entity.type,
+    title: entity.data.title,
+    link: entity.data.link,
+    summary: entity.data.summary,
+    user_id: entity.user_id || data.user_id,
+    created_at: entity.data.created_at,
+    status: entity.data.status,
+    type: entity.data.type,
   };
 }
 
@@ -64,13 +68,13 @@ export async function getBookmarks(userId: string): Promise<Bookmark[]> {
   
   return entities.map(entity => ({
     id: entity.id,
-    title: entity.title,
-    link: entity.link,
-    summary: entity.summary,
-    user_id: entity.user_id,
-    created_at: entity.created_at,
-    status: entity.status,
-    type: entity.type,
+    title: entity.data.title,
+    link: entity.data.link,
+    summary: entity.data.summary,
+    user_id: entity.user_id || userId,
+    created_at: entity.data.created_at,
+    status: entity.data.status,
+    type: entity.data.type,
   }));
 }
 
@@ -86,32 +90,34 @@ export async function getBookmark(id: string): Promise<Bookmark | null> {
   
   return {
     id: entity.id,
-    title: entity.title,
-    link: entity.link,
-    summary: entity.summary,
-    user_id: entity.user_id,
-    created_at: entity.created_at,
-    status: entity.status,
-    type: entity.type,
+    title: entity.data.title,
+    link: entity.data.link,
+    summary: entity.data.summary,
+    user_id: entity.user_id || '',
+    created_at: entity.data.created_at,
+    status: entity.data.status,
+    type: entity.data.type,
   };
 }
 
 // Update bookmark
-export async function updateBookmark(id: string, data: Partial<CreateBookmarkData>): Promise<Bookmark> {
-  const updateData = {
-    ...data,
-    updated_at: new Date().toISOString(),
+export async function updateBookmark(id: string, updateData: Partial<CreateBookmarkData>): Promise<Bookmark> {
+  const updatePayload = {
+    data: {
+      ...updateData,
+      updated_at: new Date().toISOString(),
+    }
   };
   
-  const entity = await LocalFirstOps.updateEntity(id, updateData);
+  const entity = await LocalFirstOps.updateEntity(id, updatePayload);
   return {
     id: entity.id,
-    title: entity.title,
-    link: entity.link,
-    summary: entity.summary,
-    user_id: entity.user_id,
-    created_at: entity.created_at,
-    status: entity.status,
-    type: entity.type,
+    title: entity.data.title,
+    link: entity.data.link,
+    summary: entity.data.summary,
+    user_id: entity.user_id || '',
+    created_at: entity.data.created_at,
+    status: entity.data.status,
+    type: entity.data.type,
   };
 }
