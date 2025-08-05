@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getBookmarks, deleteBookmark } from '../externals/bookmark-operations';
-import { performManualSync } from '../local-first/manual-sync';
-import { getCurrentUserLegacy } from '../local-first-impl/auth/auth';
+import { getCurrentUser } from '../externals/auth-operations';
 import type { Bookmark } from '../externals/types';
 import { Effect } from 'effect';
 
@@ -26,7 +25,7 @@ export default function BookmarkList({ currentUser, onMessage, refreshTrigger }:
 
   const loadBookmarks = async () => {
     try {
-      const user = await getCurrentUserLegacy();
+      const user = await Effect.runPromise(getCurrentUser());
       if (user) {
         const bookmarksResult = await Effect.runPromise(getBookmarks({ user_id: user.id }));
         setBookmarks(bookmarksResult);
