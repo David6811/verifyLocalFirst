@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { signInLegacy, signOutLegacy, getCurrentUserLegacy } from '../local-first-impl/auth/auth';
+import { signIn, signOut, getCurrentUser } from '../externals/auth-operations';
+import { Effect } from 'effect';
 
 interface AuthSectionProps {
   onUserChange: (user: any) => void;
@@ -17,7 +18,7 @@ export default function AuthSection({ onUserChange, onMessage }: AuthSectionProp
 
   const loadCurrentUser = async () => {
     try {
-      const user = await getCurrentUserLegacy();
+      const user = await Effect.runPromise(getCurrentUser());
       setCurrentUser(user);
       onUserChange(user);
     } catch (error) {
@@ -31,14 +32,18 @@ export default function AuthSection({ onUserChange, onMessage }: AuthSectionProp
     onMessage('');
     
     try {
-      const user = await signInLegacy({
+      const result = await Effect.runPromise(signIn({
         email: 'weixu.craftsman@gmail.com',
         password: '123456'
-      });
+      }));
       
-      setCurrentUser(user);
-      onUserChange(user);
-      onMessage(`✅ Login successful! Welcome ${user.email}`);
+      if (result.success && result.user) {
+        setCurrentUser(result.user);
+        onUserChange(result.user);
+        onMessage(`✅ Login successful! Welcome ${result.user.email}`);
+      } else {
+        throw new Error(result.error || 'Login failed');
+      }
     } catch (error) {
       onMessage(`❌ Login failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
@@ -51,10 +56,15 @@ export default function AuthSection({ onUserChange, onMessage }: AuthSectionProp
     onMessage('');
     
     try {
-      await signOutLegacy();
-      setCurrentUser(null);
-      onUserChange(null);
-      onMessage('✅ Logout successful!');
+      const result = await Effect.runPromise(signOut());
+      
+      if (result.success) {
+        setCurrentUser(null);
+        onUserChange(null);
+        onMessage('✅ Logout successful!');
+      } else {
+        throw new Error(result.error || 'Logout failed');
+      }
     } catch (error) {
       onMessage(`❌ Logout failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
