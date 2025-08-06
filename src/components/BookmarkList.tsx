@@ -1,8 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getBookmarks, deleteBookmark } from '../externals/bookmark-operations';
-import { getCurrentUser } from '../externals/auth-operations';
-import type { Bookmark } from '../externals/types';
-import { Effect } from 'effect';
+import { getBookmarks, deleteBookmark, Bookmark, getCurrentUser } from '../externals';
 
 interface BookmarkListProps {
   currentUser: any;
@@ -25,9 +22,9 @@ export default function BookmarkList({ currentUser, onMessage, refreshTrigger }:
 
   const loadBookmarks = async () => {
     try {
-      const user = await Effect.runPromise(getCurrentUser());
+      const user = await getCurrentUser();
       if (user) {
-        const bookmarksResult = await Effect.runPromise(getBookmarks({ user_id: user.id }));
+        const bookmarksResult = await getBookmarks(user.id);
         setBookmarks(bookmarksResult);
       }
     } catch (error) {
@@ -45,32 +42,16 @@ export default function BookmarkList({ currentUser, onMessage, refreshTrigger }:
     onMessage('🗑️ Deleting bookmark...');
     
     try {
-      await Effect.runPromise(deleteBookmark(bookmarkId));
+      await deleteBookmark(bookmarkId);
       onMessage(`✅ Bookmark deleted: ${bookmarkTitle}`);
-      
-      // Trigger manual sync to push deletion to Supabase - COMMENTED OUT FOR TESTING  
-      // try {
-      //   console.log('🔄 Triggering manual sync for deletion...');
-      //   const syncResult = await performManualSync();
-      //   console.log('✅ Delete sync completed:', syncResult);
-      //   onMessage(`✅ Bookmark deleted and synced: ${bookmarkTitle}`);
-      // } catch (syncError) {
-      //   console.log('⚠️ Delete sync failed but bookmark deleted locally:', syncError);
-      //   onMessage(`✅ Bookmark deleted locally: ${bookmarkTitle} (sync pending)`);
-      // }
       
       // Refresh bookmark list
       await loadBookmarks();
     } catch (error) {
-      onMessage(`❌ Delete bookmark failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      onMessage(`❌ Delete bookmark failed: ${(error as Error).message}`);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  // Public method to refresh bookmarks (can be called by parent)
-  const refresh = () => {
-    loadBookmarks();
   };
 
   if (!currentUser) return null;
