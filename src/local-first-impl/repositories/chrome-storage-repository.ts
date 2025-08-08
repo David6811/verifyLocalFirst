@@ -250,21 +250,53 @@ export class ChromeStorageRepository<T extends LocalFirstEntity = LocalFirstEnti
       is_deleted: criteria.is_deleted,
     };
     
-    return Effect.tryPromise({
-      try: async () => {
-        let entities = await Effect.runPromise(this.list(filter));
-        
-        if (criteria.offset) {
-          entities = entities.slice(criteria.offset);
-        }
-        if (criteria.limit) {
-          entities = entities.slice(0, criteria.limit);
-        }
-        
-        return entities;
-      },
-      catch: (error) => createStorageError('UNKNOWN_ERROR', `Failed to query entities: ${error}`, error instanceof Error ? error : new Error(String(error)))
-    });
+    return Effect.flatMap(
+      this.list(filter),
+      (entities) => Effect.succeed(
+        this.transformEntities(entities, criteria)
+      )
+    );
+  }
+
+  /**
+   * Elegant functional pipeline for entity transformation
+   */
+  private transformEntities(entities: T[], criteria: QueryCriteria): T[] {
+    return entities
+      .filter(entity => this.matchesAdvancedFilters(entity, criteria))
+      .slice(criteria.offset || 0, this.calculateEndIndex(criteria));
+  }
+
+  /**
+   * Pure function to check if entity matches advanced filters
+   */
+  private matchesAdvancedFilters(entity: T, criteria: QueryCriteria): boolean {
+    const filters = (criteria as any).filters;
+    if (!filters) return true;
+    
+    return Object.entries(filters).every(([key, expectedValue]) => 
+      this.getEntityFieldValue(entity, key) === expectedValue
+    );
+  }
+
+  /**
+   * Pure function to extract field value from entity
+   */
+  private getEntityFieldValue(entity: T, fieldPath: string): any {
+    if (fieldPath.startsWith('data.')) {
+      const fieldName = fieldPath.substring(5);
+      const entityData = (entity as any).data || {};
+      return entityData[fieldName];
+    }
+    return (entity as any)[fieldPath];
+  }
+
+  /**
+   * Pure function to calculate pagination end index
+   */
+  private calculateEndIndex(criteria: QueryCriteria): number | undefined {
+    const { offset = 0, limit } = criteria;
+    return limit ? offset + limit : undefined;
   }
 
   batchUpdate(operations: BatchOperation<T>[]): Effect.Effect<void, StorageError> {
