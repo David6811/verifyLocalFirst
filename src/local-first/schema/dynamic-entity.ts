@@ -204,6 +204,8 @@ export interface GenericEntityQueryOptions {
   limit?: number;
   /** 结果偏移量 */
   offset?: number;
+  /** 字段过滤条件 (如: {'data.type': 2, 'data.parent_id': 'folder-id'}) */
+  filters?: Record<string, any>;
   /** 其他查询条件 */
   [key: string]: any;
 }
